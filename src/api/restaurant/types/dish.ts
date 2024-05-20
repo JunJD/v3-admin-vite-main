@@ -1,21 +1,24 @@
-export interface CreateOrUpdateTableRequestData {
+export interface CreateOrUpdateDishRequestData {
   id?: string
-  username: string
-  password?: string
+  name: string | undefined
+  description: string
+  price: number
+  stock: number
+  img: string
 }
 
 export interface GetDishRequestData {
   /** 菜品名称，可选 */
-  name?: number
+  name?: string
   /** 菜品类别名称，可选 */
-  categoryName?: number
+  categoryName?: string
 }
 
 export interface GetDishData {
   description: string
-  id: number
-  img: null
-  name: string
+  id?: string
+  img: string
+  name: string | undefined
   price: number
   stock: number
 }

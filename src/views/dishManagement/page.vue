@@ -1,13 +1,12 @@
 <script lang="ts" setup>
 import { reactive, ref, watch } from "vue"
-import { createTableDataApi, deleteTableDataApi, updateTableDataApi } from "@/api/table"
-import { getDishDataApi } from "@/api/restaurant"
+import { createDishDataApi, deleteDishDataApi, getDishDataApi, updateDishDataApi } from "@/api/restaurant"
 import { type CreateOrUpdateTableRequestData, type GetTableData } from "@/api/table/types/table"
 import { type FormInstance, type FormRules, ElMessage, ElMessageBox } from "element-plus"
 import { Search, Refresh, CirclePlus, Delete, Download, RefreshRight } from "@element-plus/icons-vue"
 import { usePagination } from "@/hooks/usePagination"
 import { cloneDeep } from "lodash-es"
-import { GetDishData } from "@/api/restaurant/types/dish"
+import { CreateOrUpdateDishRequestData, GetDishData } from "@/api/restaurant/types/dish"
 
 defineOptions({
   // 命名当前组件
@@ -18,14 +17,16 @@ const loading = ref<boolean>(false)
 const { paginationData, handleCurrentChange, handleSizeChange } = usePagination()
 
 //#region 增
-const DEFAULT_FORM_DATA: CreateOrUpdateTableRequestData = {
-  id: undefined,
-  username: "",
-  password: ""
+const DEFAULT_FORM_DATA: CreateOrUpdateDishRequestData = {
+  name: undefined,
+  description: "",
+  price: 10,
+  stock: 10,
+  img: ""
 }
 const dialogVisible = ref<boolean>(false)
 const formRef = ref<FormInstance | null>(null)
-const formData = ref<CreateOrUpdateTableRequestData>(cloneDeep(DEFAULT_FORM_DATA))
+const formData = ref<CreateOrUpdateDishRequestData>(cloneDeep(DEFAULT_FORM_DATA))
 const formRules: FormRules<CreateOrUpdateTableRequestData> = {
   username: [{ required: true, trigger: "blur", message: "请输入用户名" }],
   password: [{ required: true, trigger: "blur", message: "请输入密码" }]
@@ -34,7 +35,7 @@ const handleCreateOrUpdate = () => {
   formRef.value?.validate((valid: boolean, fields) => {
     if (!valid) return console.error("表单校验不通过", fields)
     loading.value = true
-    const api = formData.value.id === undefined ? createTableDataApi : updateTableDataApi
+    const api = formData.value.id === undefined ? createDishDataApi : updateDishDataApi
     api(formData.value)
       .then(() => {
         ElMessage.success("操作成功")
@@ -59,7 +60,7 @@ const handleDelete = (row: GetTableData) => {
     cancelButtonText: "取消",
     type: "warning"
   }).then(() => {
-    deleteTableDataApi(row.id).then(() => {
+    deleteDishDataApi(row.id).then(() => {
       ElMessage.success("删除成功")
       getTableData()
     })
@@ -68,7 +69,7 @@ const handleDelete = (row: GetTableData) => {
 //#endregion
 
 //#region 改
-const handleUpdate = (row: GetTableData) => {
+const handleUpdate = (row: GetDishData) => {
   dialogVisible.value = true
   formData.value = cloneDeep(row)
 }
@@ -78,12 +79,13 @@ const handleUpdate = (row: GetTableData) => {
 const tableData = ref<GetDishData[]>([])
 const searchFormRef = ref<FormInstance | null>(null)
 const searchData = reactive({
-  username: "",
-  phone: ""
+  name: ""
 })
 const getTableData = () => {
   loading.value = true
-  getDishDataApi({})
+  getDishDataApi({
+    name: searchData.name
+  })
     .then(({ data }) => {
       tableData.value = data
     })
@@ -95,7 +97,7 @@ const getTableData = () => {
     })
 }
 const handleSearch = () => {
-  paginationData.currentPage === 1 ? getTableData() : (paginationData.currentPage = 1)
+  getTableData()
 }
 const resetSearch = () => {
   searchFormRef.value?.resetFields()
@@ -111,11 +113,8 @@ watch([() => paginationData.currentPage, () => paginationData.pageSize], getTabl
   <div class="app-container">
     <el-card v-loading="loading" shadow="never" class="search-wrapper">
       <el-form ref="searchFormRef" :inline="true" :model="searchData">
-        <el-form-item prop="username" label="用户名">
-          <el-input v-model="searchData.username" placeholder="请输入" />
-        </el-form-item>
-        <el-form-item prop="phone" label="手机号">
-          <el-input v-model="searchData.phone" placeholder="请输入" />
+        <el-form-item prop="name" label="菜品名">
+          <el-input v-model="searchData.name" placeholder="请输入" />
         </el-form-item>
         <el-form-item>
           <el-button type="primary" :icon="Search" @click="handleSearch">查询</el-button>
@@ -126,16 +125,8 @@ watch([() => paginationData.currentPage, () => paginationData.pageSize], getTabl
     <el-card v-loading="loading" shadow="never">
       <div class="toolbar-wrapper">
         <div>
-          <el-button type="primary" :icon="CirclePlus" @click="dialogVisible = true">新增用户</el-button>
+          <el-button type="primary" :icon="CirclePlus" @click="dialogVisible = true">新增菜品</el-button>
           <el-button type="danger" :icon="Delete">批量删除</el-button>
-        </div>
-        <div>
-          <el-tooltip content="下载">
-            <el-button type="primary" :icon="Download" circle />
-          </el-tooltip>
-          <el-tooltip content="刷新当前页">
-            <el-button type="primary" :icon="RefreshRight" circle @click="getTableData" />
-          </el-tooltip>
         </div>
       </div>
       <div class="table-wrapper">
@@ -175,16 +166,22 @@ watch([() => paginationData.currentPage, () => paginationData.pageSize], getTabl
     <!-- 新增/修改 -->
     <el-dialog
       v-model="dialogVisible"
-      :title="formData.id === undefined ? '新增用户' : '修改用户'"
+      :title="formData.id === undefined ? '新增菜品' : '修改菜品'"
       @closed="resetForm"
       width="30%"
     >
       <el-form ref="formRef" :model="formData" :rules="formRules" label-width="100px" label-position="left">
-        <el-form-item prop="username" label="用户名">
-          <el-input v-model="formData.username" placeholder="请输入" />
+        <el-form-item prop="name" label="菜品名称">
+          <el-input v-model="formData.name" placeholder="请输入" />
         </el-form-item>
-        <el-form-item prop="password" label="密码" v-if="formData.id === undefined">
-          <el-input v-model="formData.password" placeholder="请输入" />
+        <el-form-item prop="description" label="菜品描述">
+          <el-input v-model="formData.description" :rows="2" type="textarea" placeholder="请输入" />
+        </el-form-item>
+        <el-form-item prop="price" label="价格">
+          <el-input-number v-model="formData.price" placeholder="请输入" />
+        </el-form-item>
+        <el-form-item prop="stock" label="库存数量">
+          <el-input-number v-model="formData.stock" placeholder="请输入" />
         </el-form-item>
       </el-form>
       <template #footer>
