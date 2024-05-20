@@ -44,6 +44,7 @@ export const usePermissionStore = defineStore("permission", () => {
 
   const _set = (accessedRoutes: RouteRecordRaw[]) => {
     routes.value = constantRoutes.concat(accessedRoutes)
+    console.log(accessedRoutes, "accessedRoutes")
     addRoutes.value = routeSettings.thirdLevelRouteCache ? flatMultiLevelRoutes(accessedRoutes) : accessedRoutes
   }
 

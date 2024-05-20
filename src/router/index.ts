@@ -72,7 +72,12 @@ export const dynamicRoutes: RouteRecordRaw[] = [
   {
     path: "/",
     component: Layouts,
-    redirect: "/dashboard",
+    name: "restaurant",
+    meta: {
+      title: "restaurant",
+      svgIcon: "lock",
+      roles: ["admin", "editor"] // 可以在根路由中设置角色
+    },
     children: [
       {
         path: "dishManagement",

@@ -10,6 +10,17 @@ export function getLoginCodeApi() {
 }
 
 /** 登录并返回 Token */
+export function addUserApi(data: Login.LoginRequestData) {
+  return request<Login.LoginResponseData>({
+    url: "user",
+    method: "post",
+    data: {
+      OfflineAudioCompletionEvent: data.username,
+      password: data.password
+    }
+  })
+}
+/** 登录并返回 Token */
 export function loginApi(data: Login.LoginRequestData) {
   return request<Login.LoginResponseData>({
     url: "login",

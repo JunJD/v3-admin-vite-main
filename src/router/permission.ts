@@ -37,7 +37,7 @@ router.beforeEach(async (to, _from, next) => {
 
   // 否则要重新获取权限角色
   try {
-    await userStore.getInfo()
+    await userStore.getInfo(token)
     // 注意：角色必须是一个数组！ 例如: ["admin"] 或 ["developer", "editor"]
     const roles = userStore.roles
     // 生成可访问的 Routes

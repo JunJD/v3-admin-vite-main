@@ -11,7 +11,7 @@ import { useFocus } from "./hooks/useFocus"
 
 const router = useRouter()
 const { isFocus, handleBlur, handleFocus } = useFocus()
-
+// useUserStore().register()
 /** 登录表单元素的引用 */
 const loginFormRef = ref<FormInstance | null>(null)
 

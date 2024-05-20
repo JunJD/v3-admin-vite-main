@@ -39,6 +39,9 @@ function createService() {
         case 0:
           // 本系统采用 code === 0 来表示没有业务错误
           return apiData
+        case 1:
+          // 本系统采用 code === 0 来表示没有业务错误
+          return apiData
         case 401:
           // Token 过期时
           return logout()
@@ -104,7 +107,7 @@ function createRequest(service: AxiosInstance) {
       headers: {
         // 携带 Token
         Authorization: token ? `Bearer ${token}` : undefined,
-        "Content-Type": "application/json"
+        "Content-Type": "application/x-www-form-urlencoded"
       },
       timeout: 5000,
       baseURL: import.meta.env.VITE_BASE_API,

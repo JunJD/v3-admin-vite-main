@@ -36,10 +36,11 @@ export default ({ mode }: ConfigEnv): UserConfigExport => {
       proxy: {
         "/api/v1": {
           // target: "https://mock.mengxuegu.com/mock/63218b5fb4c53348ed2bc212",
-          // target: "http://127.0.0.1:8000",
+          target: "http://127.0.0.1:8080",
           // ws: true,
           /** 是否允许跨域 */
-          changeOrigin: true
+          changeOrigin: true,
+          rewrite: (path) => path.replace(/^\/api\/v1/, "")
         }
       },
       /** 预热常用文件，提高初始页面加载速度 */

@@ -5,7 +5,7 @@ import { useTagsViewStore } from "./tags-view"
 import { useSettingsStore } from "./settings"
 import { getToken, removeToken, setToken } from "@/utils/cache/cookies"
 import { resetRouter } from "@/router"
-import { loginApi, getUserInfoApi } from "@/api/login"
+import { loginApi, addUserApi } from "@/api/login"
 import { type LoginRequestData } from "@/api/login/types/login"
 import routeSettings from "@/config/route"
 
@@ -20,12 +20,28 @@ export const useUserStore = defineStore("user", () => {
   /** 登录 */
   const login = async ({ username, password }: LoginRequestData) => {
     const { data } = await loginApi({ username, password })
-    setToken(data.token)
-    token.value = data.token
+    console.log(data, "data")
+    setToken(username)
+    token.value = "admin"
+  }
+  const register = async () => {
+    const mockUserData = {
+      username: "ding",
+      password: "001"
+    }
+    const { data } = await addUserApi({ username: mockUserData.username, password: mockUserData.password })
+    console.log(data)
+    return data
   }
   /** 获取用户详情 */
-  const getInfo = async () => {
-    const { data } = await getUserInfoApi()
+  const getInfo = async (role: string) => {
+    // const { data } = await getUserInfoApi()
+    const data = await new Promise<{ username: string; roles: string[] }>((resolve) => {
+      resolve({
+        username: role,
+        roles: [role]
+      })
+    })
     username.value = data.username
     // 验证返回的 roles 是否为一个非空数组，否则塞入一个没有任何作用的默认角色，防止路由守卫逻辑进入无限循环
     roles.value = data.roles?.length > 0 ? data.roles : routeSettings.defaultRoles
@@ -60,7 +76,7 @@ export const useUserStore = defineStore("user", () => {
     }
   }
 
-  return { token, roles, username, login, getInfo, changeRoles, logout, resetToken }
+  return { token, roles, username, login, register, getInfo, changeRoles, logout, resetToken }
 })
 
 /** 在 setup 外使用 */
